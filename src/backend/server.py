@@ -1,6 +1,7 @@
 import os
 import dspy
 import uvicorn
+import sqlite3
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +9,6 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
-
 
 app = FastAPI(
     title="Instagram Comments Sentiment Analyzer API",
@@ -23,6 +23,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- SQLite setup ---
+def init_db():
+    conn = sqlite3.connect("interactions.db")
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            comment TEXT,
+            sentiment TEXT,
+            score REAL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def log_interaction(comment: str, sentiment: str, score: float):
+    conn = sqlite3.connect("interactions.db")
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO interactions (comment, sentiment, score) VALUES (?, ?, ?)",
+        (comment, sentiment, score)
+    )
+    conn.commit()
+    conn.close()
+
+init_db()
+# --- End SQLite setup ---
 
 lm = dspy.LM(
     model='openai/gpt-4o-mini',
@@ -44,9 +73,15 @@ class Comment(BaseModel):
 async def predict(input: Comment):
     try:
         result = await optimized_sentiment_analyzer_async(comment=input.text)
+        result_dict = result.toDict()
+        # Extract sentiment and score from result_dict
+        sentiment = result_dict.get("sentiment_label", "")
+        score = result_dict.get("sentiment_score", 0)
+        # Log the interaction
+        log_interaction(input.text, sentiment, score)
         return {
             "status": "success",
-            "data": result.toDict()
+            "data": result_dict
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
