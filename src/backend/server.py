@@ -3,15 +3,25 @@ import dspy
 import uvicorn
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
 
+
 app = FastAPI(
     title="Instagram Comments Sentiment Analyzer API",
     description="An API serving a DSPy program that analyzes comments received on marketing campaign run by Samsung for its phones on Instagram based on its content.",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 lm = dspy.LM(
