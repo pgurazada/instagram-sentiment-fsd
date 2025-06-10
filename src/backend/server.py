@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- SQLite setup ---
+# --- SQLite setup for logging ---
 def init_db():
     conn = sqlite3.connect("interactions.db")
     c = conn.cursor()
@@ -51,7 +51,8 @@ def log_interaction(comment: str, sentiment: str, score: float):
     conn.close()
 
 init_db()
-# --- End SQLite setup ---
+
+# --- Load and serve the optimized sentiment analyzer ---
 
 lm = dspy.LM(
     model='openai/gpt-4o-mini',
