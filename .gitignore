@@ -8,8 +8,8 @@ mlruns/
 
 # NextJS frontend
 
-sentiment-analysis-nextjs/.next/
-sentiment-analysis-nextjs/node_modules/
+src/frontend/sentiment-analysis-nextjs/.next/
+src/frontend/sentiment-analysis-nextjs/node_modules/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
