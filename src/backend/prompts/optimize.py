@@ -33,7 +33,7 @@ test_df = pd.read_csv("hf://datasets/pgurazada1/instagram-comments-sentiment/" +
 def validate_sentiment(example, prediction, trace=None):
     return prediction.sentiment_label == example.sentiment_label
 
-class SentimentAssignment(dspy.Signature):
+class SentimentAssignmentInstructions(dspy.Signature):
     """
     Assign sentiment to a comment received on a marketing campaign run by Samsung for its phones on Instagram based on its content.
     Use a scale of -1 to 1, where -1 is negative, 0 is neutral, and 1 is positive.
@@ -53,7 +53,7 @@ testset = [
     for row in test_df.itertuples()
 ]
 
-sentiment_analyzer = dspy.ChainOfThought(SentimentAssignment)
+sentiment_analyzer = dspy.ChainOfThought(SentimentAssignmentInstructions)
 
 # Baseline on the gold examples (before prompt is optimized)
 
